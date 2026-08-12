@@ -90,6 +90,9 @@ export async function POST(req) {
     return Response.json({ ok: true, content: merged });
   } catch (error) {
     console.error('Save content error:', error);
-    return Response.json({ ok: false, message: 'Unable to save content.' }, { status: 500 });
+    return Response.json(
+      { ok: false, message: error?.message || 'Unable to save content.' },
+      { status: 500 }
+    );
   }
 }
