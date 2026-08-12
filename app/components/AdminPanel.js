@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, useImperativeHandle, useState } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 
 const AdminPanel = forwardRef(function AdminPanel(
   { content, onContentChange, onAuthenticated, isAuthenticated },
@@ -12,6 +12,7 @@ const AdminPanel = forwardRef(function AdminPanel(
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [draft, setDraft] = useState(null);
+  const authPasswordRef = useRef('');
 
   function openLogin() {
     if (isAuthenticated) {
@@ -61,6 +62,7 @@ const AdminPanel = forwardRef(function AdminPanel(
         return;
       }
       onAuthenticated();
+      authPasswordRef.current = password;
       closeLogin();
       openEditor();
     } catch {
@@ -78,7 +80,7 @@ const AdminPanel = forwardRef(function AdminPanel(
       const res = await fetch('/api/content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: draft, password }),
+        body: JSON.stringify({ content: draft, password: authPasswordRef.current }),
       });
       const data = await res.json();
       if (!res.ok || !data.ok) {
