@@ -1,7 +1,6 @@
 'use client';
 
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import ImagePicker from './ImagePicker';
 
 const AdminPanel = forwardRef(function AdminPanel(
   { content, onContentChange, onAuthenticated, isAuthenticated },
@@ -14,7 +13,34 @@ const AdminPanel = forwardRef(function AdminPanel(
   const [busy, setBusy] = useState(false);
   const [draft, setDraft] = useState(null);
   const authPasswordRef = useRef('');
-  const [pickerIndex, setPickerIndex] = useState(null);
+  const fileInputRefs = useRef({});
+
+  function triggerUpload(index) {
+    fileInputRefs.current[index]?.click();
+  }
+
+  async function handleUpload(index, e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    setBusy(true);
+    setError('');
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const res = await fetch('/api/upload', { method: 'POST', body: form });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setError(data.message || 'Upload failed.');
+        return;
+      }
+      updateGalleryItem(index, 'image', data.url);
+    } catch {
+      setError('Upload failed. Please try again.');
+    } finally {
+      setBusy(false);
+      e.target.value = '';
+    }
+  }
 
   function openLogin() {
     if (isAuthenticated) {
@@ -362,10 +388,20 @@ const AdminPanel = forwardRef(function AdminPanel(
                           onChange={(e) => updateGalleryItem(index, 'image', e.target.value)}
                           placeholder="Paste an image URL"
                         />
+                        <input
+                          ref={(el) => {
+                            fileInputRefs.current[index] = el;
+                          }}
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={(e) => handleUpload(index, e)}
+                        />
                         <button
                           type="button"
                           className="ghost-btn"
-                          onClick={() => setPickerIndex(index)}
+                          disabled={busy}
+                          onClick={() => triggerUpload(index)}
                         >
                           Browse
                         </button>
@@ -459,14 +495,6 @@ const AdminPanel = forwardRef(function AdminPanel(
           </div>
         </div>
       )}
-
-      <ImagePicker
-        open={pickerIndex !== null}
-        onClose={() => setPickerIndex(null)}
-        onSelect={(imageUrl) => {
-          if (pickerIndex !== null) updateGalleryItem(pickerIndex, 'image', imageUrl);
-        }}
-      />
     </>
   );
 });
