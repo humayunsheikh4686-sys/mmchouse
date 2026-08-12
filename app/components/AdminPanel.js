@@ -1,6 +1,7 @@
 'use client';
 
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import ImagePicker from './ImagePicker';
 
 const AdminPanel = forwardRef(function AdminPanel(
   { content, onContentChange, onAuthenticated, isAuthenticated },
@@ -13,6 +14,7 @@ const AdminPanel = forwardRef(function AdminPanel(
   const [busy, setBusy] = useState(false);
   const [draft, setDraft] = useState(null);
   const authPasswordRef = useRef('');
+  const [pickerIndex, setPickerIndex] = useState(null);
 
   function openLogin() {
     if (isAuthenticated) {
@@ -338,11 +340,36 @@ const AdminPanel = forwardRef(function AdminPanel(
                       />
                     </div>
                     <div className="field">
-                      <label>Image URL</label>
-                      <input
-                        value={item.image || ''}
-                        onChange={(e) => updateGalleryItem(index, 'image', e.target.value)}
-                      />
+                      <label>Image</label>
+                      {item.image && (
+                        <img
+                          src={item.image}
+                          alt={item.title || 'Preview'}
+                          style={{
+                            width: '100%',
+                            maxHeight: '160px',
+                            objectFit: 'cover',
+                            borderRadius: '12px',
+                            marginBottom: '8px',
+                            border: '1px solid var(--border)',
+                          }}
+                        />
+                      )}
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <input
+                          style={{ flex: 1 }}
+                          value={item.image || ''}
+                          onChange={(e) => updateGalleryItem(index, 'image', e.target.value)}
+                          placeholder="Paste an image URL"
+                        />
+                        <button
+                          type="button"
+                          className="ghost-btn"
+                          onClick={() => setPickerIndex(index)}
+                        >
+                          Browse
+                        </button>
+                      </div>
                     </div>
                     <div className="field">
                       <label>Detail</label>
@@ -432,6 +459,14 @@ const AdminPanel = forwardRef(function AdminPanel(
           </div>
         </div>
       )}
+
+      <ImagePicker
+        open={pickerIndex !== null}
+        onClose={() => setPickerIndex(null)}
+        onSelect={(imageUrl) => {
+          if (pickerIndex !== null) updateGalleryItem(pickerIndex, 'image', imageUrl);
+        }}
+      />
     </>
   );
 });
