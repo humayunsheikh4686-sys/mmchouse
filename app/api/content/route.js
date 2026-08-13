@@ -1,4 +1,4 @@
-import { getAdminClient, getPublicClient } from '../../../lib/supabase';
+import { getAdminClient } from '../../../lib/supabase';
 import { DEFAULT_CONTENT } from '../../../lib/defaultContent';
 
 const FALLBACK_PASSWORD = 'Humayun@Admin!2026';
@@ -32,7 +32,7 @@ function normalizeContent(raw) {
 
 export async function GET() {
   try {
-    const client = getPublicClient();
+    const client = getAdminClient();
     const { data, error } = await client.from('site_content').select('content').eq('id', 1).single();
 
     if (error || !data) {
