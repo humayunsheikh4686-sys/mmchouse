@@ -8,11 +8,21 @@ export default function Reveal({ children, as: Tag = 'div', className = '', ...r
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+
+    const show = () => el.classList.add('show');
+    const fallback = setTimeout(show, 2500);
+
+    if (typeof IntersectionObserver === 'undefined') {
+      show();
+      return () => clearTimeout(fallback);
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add('show');
+            show();
+            clearTimeout(fallback);
             observer.unobserve(entry.target);
           }
         });
@@ -20,7 +30,10 @@ export default function Reveal({ children, as: Tag = 'div', className = '', ...r
       { threshold: 0.15 }
     );
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      clearTimeout(fallback);
+    };
   }, []);
 
   return (

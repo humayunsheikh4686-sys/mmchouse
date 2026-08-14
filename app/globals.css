@@ -524,12 +524,12 @@
         margin-top: 18px;
       }
 
-      .reveal {
+      .js .reveal {
         opacity: 0;
         transform: translateY(28px);
         transition: opacity 0.7s ease, transform 0.7s ease;
       }
-      .reveal.show { opacity: 1; transform: translateY(0); }
+      .js .reveal.show { opacity: 1; transform: translateY(0); }
 
       @media (max-width: 900px) {
         .hero-grid, .about-grid, .gallery-shell, .cv-card { grid-template-columns: 1fr; }
